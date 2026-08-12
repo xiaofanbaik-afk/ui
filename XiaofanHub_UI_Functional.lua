@@ -1,0 +1,558 @@
+--[[
+    XIAOFAN HUB UI LIBRARY
+    Fitur: Tab System, Toggle, Slider, Button, Notification
+    Style: Dark theme + Gold accent (konsisten sama versi sebelumnya)
+]]
+
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+-- Guard LocalPlayer
+local LocalPlayer = Players.LocalPlayer
+while not LocalPlayer do
+    task.wait()
+    LocalPlayer = Players.LocalPlayer
+end
+
+local function getSafeParent()
+    local ok, hui = pcall(function() return gethui and gethui() end)
+    if ok and hui then return hui end
+    local ok2 = pcall(function() return CoreGui end)
+    if ok2 and CoreGui then return CoreGui end
+    return LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local safeParent = getSafeParent()
+if safeParent:FindFirstChild("OxideStyleUI") then
+    safeParent.OxideStyleUI:Destroy()
+end
+
+----------------------------------------------------------------
+-- ROOT
+----------------------------------------------------------------
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "OxideStyleUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.DisplayOrder = 999
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.IgnoreGuiInset = true
+
+local parentOk = pcall(function() ScreenGui.Parent = safeParent end)
+if not parentOk then
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 560, 0, 360)
+MainFrame.Position = UDim2.new(0.5, -280, 0.5, -180)
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 10)
+MainCorner.Parent = MainFrame
+
+----------------------------------------------------------------
+-- SIDEBAR
+----------------------------------------------------------------
+local Sidebar = Instance.new("Frame")
+Sidebar.Name = "Sidebar"
+Sidebar.Size = UDim2.new(0, 140, 1, -16)
+Sidebar.Position = UDim2.new(0, 8, 0, 8)
+Sidebar.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+Sidebar.BorderSizePixel = 0
+Sidebar.Parent = MainFrame
+
+local SideCorner = Instance.new("UICorner")
+SideCorner.CornerRadius = UDim.new(0, 8)
+SideCorner.Parent = Sidebar
+
+local LogoContainer = Instance.new("Frame")
+LogoContainer.Name = "LogoContainer"
+LogoContainer.Size = UDim2.new(0, 50, 0, 50)
+LogoContainer.Position = UDim2.new(0.5, -25, 0, 10)
+LogoContainer.BackgroundTransparency = 1
+LogoContainer.Parent = Sidebar
+
+local LogoX = Instance.new("TextLabel")
+LogoX.Name = "LogoX"
+LogoX.Size = UDim2.new(1, 0, 1, 0)
+LogoX.Position = UDim2.new(0, 0, 0, 0)
+LogoX.BackgroundTransparency = 1
+LogoX.Text = "X"
+LogoX.TextColor3 = Color3.fromRGB(255, 215, 0)
+LogoX.TextSize = 38
+LogoX.Font = Enum.Font.SourceSansBold
+LogoX.Parent = LogoContainer
+
+local HubTitle = Instance.new("TextLabel")
+HubTitle.Size = UDim2.new(1, 0, 0, 20)
+HubTitle.Position = UDim2.new(0, 0, 0, 65)
+HubTitle.BackgroundTransparency = 1
+HubTitle.Text = "XIAOFAN HUB"
+HubTitle.TextColor3 = Color3.fromRGB(240, 240, 240)
+HubTitle.TextSize = 13
+HubTitle.Font = Enum.Font.SourceSansBold
+HubTitle.Parent = Sidebar
+
+-- List tab (di antara title dan usercard)
+local TabList = Instance.new("ScrollingFrame")
+TabList.Name = "TabList"
+TabList.Size = UDim2.new(1, -10, 1, -150)
+TabList.Position = UDim2.new(0, 5, 0, 92)
+TabList.BackgroundTransparency = 1
+TabList.BorderSizePixel = 0
+TabList.ScrollBarThickness = 3
+TabList.CanvasSize = UDim2.new(0, 0, 0, 0)
+TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+TabList.Parent = Sidebar
+
+local TabListLayout = Instance.new("UIListLayout")
+TabListLayout.Padding = UDim.new(0, 4)
+TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+TabListLayout.Parent = TabList
+
+local UserCard = Instance.new("Frame")
+UserCard.Size = UDim2.new(0.9, 0, 0, 40)
+UserCard.Position = UDim2.new(0.05, 0, 1, -45)
+UserCard.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
+UserCard.BorderSizePixel = 0
+UserCard.Parent = Sidebar
+
+local CardCorner = Instance.new("UICorner")
+CardCorner.CornerRadius = UDim.new(0, 6)
+CardCorner.Parent = UserCard
+
+local UserName = Instance.new("TextLabel")
+UserName.Size = UDim2.new(1, -10, 1, 0)
+UserName.Position = UDim2.new(0, 5, 0, 0)
+UserName.BackgroundTransparency = 1
+UserName.Text = "@" .. LocalPlayer.Name
+UserName.TextColor3 = Color3.fromRGB(150, 150, 160)
+UserName.TextSize = 11
+UserName.TextXAlignment = Enum.TextXAlignment.Left
+UserName.Font = Enum.Font.SourceSans
+UserName.Parent = UserCard
+
+----------------------------------------------------------------
+-- CONTENT AREA
+----------------------------------------------------------------
+local ContentArea = Instance.new("Frame")
+ContentArea.Size = UDim2.new(1, -164, 1, -16)
+ContentArea.Position = UDim2.new(0, 156, 0, 8)
+ContentArea.BackgroundTransparency = 1
+ContentArea.Parent = MainFrame
+
+local TabHeader = Instance.new("TextLabel")
+TabHeader.Name = "TabHeader"
+TabHeader.Size = UDim2.new(1, 0, 0, 25)
+TabHeader.BackgroundTransparency = 1
+TabHeader.Text = ""
+TabHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
+TabHeader.TextSize = 16
+TabHeader.TextXAlignment = Enum.TextXAlignment.Left
+TabHeader.Font = Enum.Font.SourceSansBold
+TabHeader.Parent = ContentArea
+
+local PageHolder = Instance.new("Frame")
+PageHolder.Name = "PageHolder"
+PageHolder.Size = UDim2.new(1, 0, 1, -30)
+PageHolder.Position = UDim2.new(0, 0, 0, 30)
+PageHolder.BackgroundTransparency = 1
+PageHolder.Parent = ContentArea
+
+----------------------------------------------------------------
+-- NOTIFICATION HOLDER
+----------------------------------------------------------------
+local NotifHolder = Instance.new("Frame")
+NotifHolder.Name = "NotifHolder"
+NotifHolder.Size = UDim2.new(0, 260, 1, 0)
+NotifHolder.Position = UDim2.new(1, -270, 0, 10)
+NotifHolder.BackgroundTransparency = 1
+NotifHolder.Parent = ScreenGui
+
+local NotifLayout = Instance.new("UIListLayout")
+NotifLayout.Padding = UDim.new(0, 6)
+NotifLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+NotifLayout.SortOrder = Enum.SortOrder.LayoutOrder
+NotifLayout.Parent = NotifHolder
+
+----------------------------------------------------------------
+-- ANIMASI LOGO
+----------------------------------------------------------------
+local angle = 0
+local logoConn
+logoConn = RunService.RenderStepped:Connect(function(dt)
+    if not LogoX or not LogoX.Parent then
+        logoConn:Disconnect()
+        return
+    end
+    angle = angle + (dt * 3.5)
+    local widthScale = math.abs(math.cos(angle))
+    if widthScale < 0.05 then widthScale = 0.05 end
+    LogoX.Size = UDim2.new(widthScale, 0, 1, 0)
+    LogoX.Position = UDim2.new((1 - widthScale) / 2, 0, 0, 0)
+end)
+
+----------------------------------------------------------------
+-- LIBRARY API
+----------------------------------------------------------------
+local Library = {}
+Library.Tabs = {}
+Library.CurrentTab = nil
+
+function Library:Notify(title, text, duration)
+    duration = duration or 3
+
+    local Notif = Instance.new("Frame")
+    Notif.Size = UDim2.new(1, 0, 0, 60)
+    Notif.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+    Notif.BorderSizePixel = 0
+    Notif.BackgroundTransparency = 1
+    Notif.Parent = NotifHolder
+
+    local NCorner = Instance.new("UICorner")
+    NCorner.CornerRadius = UDim.new(0, 8)
+    NCorner.Parent = Notif
+
+    local NTitle = Instance.new("TextLabel")
+    NTitle.Size = UDim2.new(1, -16, 0, 20)
+    NTitle.Position = UDim2.new(0, 8, 0, 6)
+    NTitle.BackgroundTransparency = 1
+    NTitle.Text = title
+    NTitle.TextColor3 = Color3.fromRGB(255, 215, 0)
+    NTitle.TextSize = 14
+    NTitle.Font = Enum.Font.SourceSansBold
+    NTitle.TextXAlignment = Enum.TextXAlignment.Left
+    NTitle.TextTransparency = 1
+    NTitle.Parent = Notif
+
+    local NText = Instance.new("TextLabel")
+    NText.Size = UDim2.new(1, -16, 0, 28)
+    NText.Position = UDim2.new(0, 8, 0, 26)
+    NText.BackgroundTransparency = 1
+    NText.Text = text
+    NText.TextColor3 = Color3.fromRGB(200, 200, 205)
+    NText.TextSize = 12
+    NText.Font = Enum.Font.SourceSans
+    NText.TextXAlignment = Enum.TextXAlignment.Left
+    NText.TextWrapped = true
+    NText.TextTransparency = 1
+    NText.Parent = Notif
+
+    TweenService:Create(Notif, TweenInfo.new(0.25), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(NTitle, TweenInfo.new(0.25), {TextTransparency = 0}):Play()
+    TweenService:Create(NText, TweenInfo.new(0.25), {TextTransparency = 0}):Play()
+
+    task.delay(duration, function()
+        if not Notif or not Notif.Parent then return end
+        TweenService:Create(Notif, TweenInfo.new(0.25), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(NTitle, TweenInfo.new(0.25), {TextTransparency = 1}):Play()
+        local tw = TweenService:Create(NText, TweenInfo.new(0.25), {TextTransparency = 1})
+        tw:Play()
+        tw.Completed:Wait()
+        Notif:Destroy()
+    end)
+end
+
+function Library:CreateTab(name)
+    local TabButton = Instance.new("TextButton")
+    TabButton.Name = name
+    TabButton.Size = UDim2.new(1, 0, 0, 30)
+    TabButton.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+    TabButton.BackgroundTransparency = 1
+    TabButton.Text = name
+    TabButton.TextColor3 = Color3.fromRGB(180, 180, 190)
+    TabButton.TextSize = 13
+    TabButton.Font = Enum.Font.SourceSans
+    TabButton.AutoButtonColor = false
+    TabButton.LayoutOrder = #Library.Tabs + 1
+    TabButton.Parent = TabList
+
+    local TabBtnCorner = Instance.new("UICorner")
+    TabBtnCorner.CornerRadius = UDim.new(0, 6)
+    TabBtnCorner.Parent = TabButton
+
+    local Page = Instance.new("ScrollingFrame")
+    Page.Name = name .. "_Page"
+    Page.Size = UDim2.new(1, 0, 1, 0)
+    Page.BackgroundTransparency = 1
+    Page.BorderSizePixel = 0
+    Page.ScrollBarThickness = 3
+    Page.CanvasSize = UDim2.new(0, 0, 0, 0)
+    Page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    Page.Visible = false
+    Page.Parent = PageHolder
+
+    local PageLayout = Instance.new("UIListLayout")
+    PageLayout.Padding = UDim.new(0, 10)
+    PageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    PageLayout.Parent = Page
+
+    local TabObj = {}
+    TabObj.Page = Page
+    TabObj.Name = name
+
+    local function selectTab()
+        for _, t in pairs(Library.Tabs) do
+            t.Page.Visible = false
+            TweenService:Create(t.Button, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
+            t.Button.TextColor3 = Color3.fromRGB(180, 180, 190)
+        end
+        Page.Visible = true
+        TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundTransparency = 0}):Play()
+        TabButton.TextColor3 = Color3.fromRGB(255, 215, 0)
+        TabHeader.Text = name
+        Library.CurrentTab = TabObj
+    end
+
+    TabButton.MouseButton1Click:Connect(selectTab)
+    TabObj.Button = TabButton
+
+    table.insert(Library.Tabs, TabObj)
+
+    if #Library.Tabs == 1 then
+        selectTab()
+    end
+
+    ------------------------------------------------------------
+    -- COMPONENT: BUTTON
+    ------------------------------------------------------------
+    function TabObj:CreateButton(text, callback)
+        callback = callback or function() end
+
+        local Btn = Instance.new("TextButton")
+        Btn.Size = UDim2.new(1, 0, 0, 34)
+        Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+        Btn.Text = text
+        Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Btn.TextSize = 13
+        Btn.Font = Enum.Font.SourceSansBold
+        Btn.AutoButtonColor = false
+        Btn.Parent = Page
+
+        local BtnCorner = Instance.new("UICorner")
+        BtnCorner.CornerRadius = UDim.new(0, 6)
+        BtnCorner.Parent = Btn
+
+        Btn.MouseButton1Click:Connect(function()
+            TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 215, 0)}):Play()
+            task.wait(0.1)
+            TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(30, 30, 36)}):Play()
+            local ok, err = pcall(callback)
+            if not ok then
+                warn("[XiaofanHub] Button callback error: " .. tostring(err))
+            end
+        end)
+
+        return Btn
+    end
+
+    ------------------------------------------------------------
+    -- COMPONENT: TOGGLE
+    ------------------------------------------------------------
+    function TabObj:CreateToggle(text, default, callback)
+        callback = callback or function() end
+        local state = default or false
+
+        local Holder = Instance.new("Frame")
+        Holder.Size = UDim2.new(1, 0, 0, 34)
+        Holder.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+        Holder.Parent = Page
+
+        local HCorner = Instance.new("UICorner")
+        HCorner.CornerRadius = UDim.new(0, 6)
+        HCorner.Parent = Holder
+
+        local Label = Instance.new("TextLabel")
+        Label.Size = UDim2.new(1, -60, 1, 0)
+        Label.Position = UDim2.new(0, 10, 0, 0)
+        Label.BackgroundTransparency = 1
+        Label.Text = text
+        Label.TextColor3 = Color3.fromRGB(230, 230, 230)
+        Label.TextSize = 13
+        Label.Font = Enum.Font.SourceSans
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        Label.Parent = Holder
+
+        local Switch = Instance.new("Frame")
+        Switch.Size = UDim2.new(0, 38, 0, 20)
+        Switch.Position = UDim2.new(1, -48, 0.5, -10)
+        Switch.BackgroundColor3 = state and Color3.fromRGB(255, 215, 0) or Color3.fromRGB(50, 50, 58)
+        Switch.Parent = Holder
+
+        local SwitchCorner = Instance.new("UICorner")
+        SwitchCorner.CornerRadius = UDim.new(1, 0)
+        SwitchCorner.Parent = Switch
+
+        local Knob = Instance.new("Frame")
+        Knob.Size = UDim2.new(0, 16, 0, 16)
+        Knob.Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+        Knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Knob.Parent = Switch
+
+        local KnobCorner = Instance.new("UICorner")
+        KnobCorner.CornerRadius = UDim.new(1, 0)
+        KnobCorner.Parent = Knob
+
+        local ClickCatcher = Instance.new("TextButton")
+        ClickCatcher.Size = UDim2.new(1, 0, 1, 0)
+        ClickCatcher.BackgroundTransparency = 1
+        ClickCatcher.Text = ""
+        ClickCatcher.Parent = Holder
+
+        ClickCatcher.MouseButton1Click:Connect(function()
+            state = not state
+            TweenService:Create(Switch, TweenInfo.new(0.15), {
+                BackgroundColor3 = state and Color3.fromRGB(255, 215, 0) or Color3.fromRGB(50, 50, 58)
+            }):Play()
+            TweenService:Create(Knob, TweenInfo.new(0.15), {
+                Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+            }):Play()
+            local ok, err = pcall(callback, state)
+            if not ok then
+                warn("[XiaofanHub] Toggle callback error: " .. tostring(err))
+            end
+        end)
+
+        return Holder
+    end
+
+    ------------------------------------------------------------
+    -- COMPONENT: SLIDER
+    ------------------------------------------------------------
+    function TabObj:CreateSlider(text, min, max, default, callback)
+        callback = callback or function() end
+        min = min or 0
+        max = max or 100
+        default = math.clamp(default or min, min, max)
+
+        local Holder = Instance.new("Frame")
+        Holder.Size = UDim2.new(1, 0, 0, 46)
+        Holder.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+        Holder.Parent = Page
+
+        local HCorner = Instance.new("UICorner")
+        HCorner.CornerRadius = UDim.new(0, 6)
+        HCorner.Parent = Holder
+
+        local Label = Instance.new("TextLabel")
+        Label.Size = UDim2.new(1, -50, 0, 20)
+        Label.Position = UDim2.new(0, 10, 0, 4)
+        Label.BackgroundTransparency = 1
+        Label.Text = text
+        Label.TextColor3 = Color3.fromRGB(230, 230, 230)
+        Label.TextSize = 13
+        Label.Font = Enum.Font.SourceSans
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        Label.Parent = Holder
+
+        local ValueLabel = Instance.new("TextLabel")
+        ValueLabel.Size = UDim2.new(0, 40, 0, 20)
+        ValueLabel.Position = UDim2.new(1, -46, 0, 4)
+        ValueLabel.BackgroundTransparency = 1
+        ValueLabel.Text = tostring(default)
+        ValueLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+        ValueLabel.TextSize = 12
+        ValueLabel.Font = Enum.Font.SourceSansBold
+        ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
+        ValueLabel.Parent = Holder
+
+        local Track = Instance.new("Frame")
+        Track.Size = UDim2.new(1, -20, 0, 6)
+        Track.Position = UDim2.new(0, 10, 0, 30)
+        Track.BackgroundColor3 = Color3.fromRGB(50, 50, 58)
+        Track.Parent = Holder
+
+        local TrackCorner = Instance.new("UICorner")
+        TrackCorner.CornerRadius = UDim.new(1, 0)
+        TrackCorner.Parent = Track
+
+        local Fill = Instance.new("Frame")
+        local pct = (default - min) / (max - min)
+        Fill.Size = UDim2.new(pct, 0, 1, 0)
+        Fill.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
+        Fill.Parent = Track
+
+        local FillCorner = Instance.new("UICorner")
+        FillCorner.CornerRadius = UDim.new(1, 0)
+        FillCorner.Parent = Fill
+
+        local dragging = false
+
+        local function updateFromInput(input)
+            local relativeX = math.clamp((input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
+            local value = math.floor(min + (max - min) * relativeX)
+            Fill.Size = UDim2.new(relativeX, 0, 1, 0)
+            ValueLabel.Text = tostring(value)
+            local ok, err = pcall(callback, value)
+            if not ok then
+                warn("[XiaofanHub] Slider callback error: " .. tostring(err))
+            end
+        end
+
+        Track.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                updateFromInput(input)
+            end
+        end)
+
+        RunService.RenderStepped:Connect(function()
+            if not Holder or not Holder.Parent then return end
+        end)
+
+        local UserInputService = game:GetService("UserInputService")
+        UserInputService.InputChanged:Connect(function(input)
+            if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                updateFromInput(input)
+            end
+        end)
+        UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = false
+            end
+        end)
+
+        return Holder
+    end
+
+    return TabObj
+end
+
+----------------------------------------------------------------
+-- CONTOH PEMAKAIAN (hapus/ganti sesuai kebutuhan kamu)
+----------------------------------------------------------------
+local MainTab = Library:CreateTab("Main")
+local VisualsTab = Library:CreateTab("Visuals")
+local SettingsTab = Library:CreateTab("Settings")
+
+MainTab:CreateToggle("Speed Boost", false, function(state)
+    print("Speed Boost:", state)
+end)
+
+MainTab:CreateSlider("WalkSpeed", 16, 100, 16, function(value)
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = value
+    end
+end)
+
+MainTab:CreateButton("Notify Success", function()
+    Library:Notify("Success", "Aksi berhasil dijalankan!")
+end)
+
+VisualsTab:CreateToggle("ESP", false, function(state)
+    print("ESP:", state)
+end)
+
+SettingsTab:CreateButton("Save Config", function()
+    Library:Notify("Config", "Config tersimpan.")
+end)
+
+return Library
